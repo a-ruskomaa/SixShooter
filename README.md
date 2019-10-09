@@ -3,8 +3,9 @@
 # Six Shooter
 
  Jyväskylän yliopiston Ohjelmointi 1 -kurssin harjoitustyönä toteutettu peli
+
  
- Peli on yksinkertainen arcade-henkinen western-ammuskelu. Pelin ideana on hiirellä tähdäten ampua esteiden takaa nousevia vihollisia ja pysyä hengissä mahdollisimman pitkään. Aseena on kuudesti laukeava revolveri. Vasen hiiren näppäin ampuu, oikea näppäin lataa aseen.
+ Six Shooter on yksinkertainen arcade-henkinen western-teemainen ammuskelupeli. Pelin ideana on hiirellä tähdäten ampua esteiden takaa nousevia vihollisia ja pysyä hengissä mahdollisimman pitkään. Aseena on kuudesti laukeava revolveri. Vasen hiiren näppäin ampuu, oikea näppäin lataa aseen.
  
  Vain päähän tai vartaloon osuneet laukaukset rekisteröidään. Pääosumasta ansaitsee enemmän pisteitä. Voit ansaita myös sattumanvaraisen bonuksen, kuten lisää osumapisteitä tai rajattomat ammukset. Myös bonuksen todennäköisyys on suurempi pääosumassa. 
  
@@ -12,6 +13,6 @@
 
 ![ruutukaappaus](Content/screenshot.png)
 
-Osa pelin sisällöstä on luotu muokkaamalla muiden tuottamaa avoimella lisenssillä julkaistua materiaalia. Tarkemmat tiedot tekijänoikeuksien haltijoista sekä käytetyistä lisensseistä löydät [täältä](Copyright_notices.txt).
+Osa pelin sisällöstä on luotu muokkaamalla muiden tuottamaa avoimella lisenssillä julkaistua materiaalia. Tarkemmat tiedot tekijänoikeuksien haltijoista sekä käytetyistä lisensseistä löydät [täältä](Copyright_notices.md).
 
  Aiempi versionhallinta toteutettu Subversionilla. Repositorio: https://svn.cc.jyu.fi/srv/svn/ohj1-pelit/2019s/roarusko/trunk
