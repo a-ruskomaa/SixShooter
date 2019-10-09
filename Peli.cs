@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Xml;
 using Jypeli;
 using Jypeli.Assets;
@@ -257,12 +256,12 @@ namespace SixShooter
         /// <returns>Palauttaa taulukon, jossa on peliin sijoitettavien esineiden koordinaatit vektoreina.</returns>
         private Vector[] PaikkaVektorit()
         {
-            //System.IO.Stream streamRes = Assembly.GetExecutingAssembly().GetManifestResourceStream("SixShooter.sijainnit.xml");
-
             XmlDocument sijainnitXML = new XmlDocument();
             sijainnitXML.Load("sijainnit.xml");
 
             XmlNodeList nodes = sijainnitXML.SelectNodes("/sijainnit/vektori");
+
+            Vector[] sijainnit = new Vector[nodes.Count];
 
             Console.WriteLine(nodes.Count);
 
