@@ -3,8 +3,9 @@
 # Six Shooter
 
  Jyväskylän yliopiston Ohjelmointi 1 -kurssin harjoitustyönä toteutettu peli
+
  
- Peli on yksinkertainen arcade-henkinen western-ammuskelu. Pelin ideana on hiirellä tähdäten ampua esteiden takaa nousevia vihollisia ja pysyä hengissä mahdollisimman pitkään. Aseena on kuudesti laukeava revolveri. Vasen hiiren näppäin ampuu, oikea näppäin lataa aseen.
+ Six Shooter on yksinkertainen arcade-henkinen western-teemainen ammuskelupeli. Pelin ideana on hiirellä tähdäten ampua esteiden takaa nousevia vihollisia ja pysyä hengissä mahdollisimman pitkään. Aseena on kuudesti laukeava revolveri. Vasen hiiren näppäin ampuu, oikea näppäin lataa aseen.
  
  Vain päähän tai vartaloon osuneet laukaukset rekisteröidään. Pääosumasta ansaitsee enemmän pisteitä. Voit ansaita myös sattumanvaraisen bonuksen, kuten lisää osumapisteitä tai rajattomat ammukset. Myös bonuksen todennäköisyys on suurempi pääosumassa. 
  
