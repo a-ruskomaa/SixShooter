@@ -12,6 +12,6 @@
 
 ![ruutukaappaus](Content/screenshot.png)
 
-Osa pelin sisällöstä on luotu muokkaamalla muiden tuottamaa avoimella lisenssillä julkaistua materiaalia. Tarkemmat tiedot tekijänoikeuksien haltijoista sekä käytetyistä lisensseistä löydät [täältä](Copyright_notices.txt).
+Osa pelin sisällöstä on luotu muokkaamalla muiden tuottamaa avoimella lisenssillä julkaistua materiaalia. Tarkemmat tiedot tekijänoikeuksien haltijoista sekä käytetyistä lisensseistä löydät [täältä](Copyright_notices.md).
 
  Aiempi versionhallinta toteutettu Subversionilla. Repositorio: https://svn.cc.jyu.fi/srv/svn/ohj1-pelit/2019s/roarusko/trunk
