@@ -1,4 +1,4 @@
-![# Six Shooter](Content/title.png)
+![Six Shooter](Content/title.png)
 
 # Six Shooter
 
@@ -9,5 +9,7 @@
  Vain päähän tai vartaloon osuneet laukaukset rekisteröidään. Pääosumasta ansaitsee enemmän pisteitä. Voit ansaita myös sattumanvaraisen bonuksen, kuten lisää osumapisteitä tai rajattomat ammukset. Myös bonuksen todennäköisyys on suurempi pääosumassa. 
  
  Eliminoituasi kaikki tason viholliset, alkaa uusi taso jossa viholliset ovat hieman aiempaa nopeampia.
+
+![ruutukaappaus](Content/screenshot.png)
 
  Aiempi versionhallinta toteutettu Subversionilla. Repositorio: https://svn.cc.jyu.fi/srv/svn/ohj1-pelit/2019s/roarusko/trunk
