@@ -8,8 +8,6 @@ using Jypeli.Widgets;
 
 namespace SixShooter
 {
-    //TODO Progress bar bonuksille
-
     /// <summary>
     /// Luokasta luotu olio vastaa peli-instanssin käyttöliittymäkomponenttien luomisesta ja ylläpidosta.
     /// </summary>
@@ -82,7 +80,7 @@ namespace SixShooter
 
 
         /// <summary>
-        /// Aliohjelma lataa ammus- ja osumapistetilanteen näyttämisessä käytettävät kuvat ja tallentaa viitteet sopiviin taulukoihin
+        /// Lataa ammus- ja osumapistetilanteen näyttämisessä käytettävät kuvat ja tallentaa viitteet sopiviin taulukoihin
         /// </summary>
         private void LataaUiGrafiikka()
         {
@@ -119,7 +117,7 @@ namespace SixShooter
             pisteNaytto.X = Game.Screen.Left + 50 + pisteNaytto.Width / 2;
             pisteNaytto.Y = 360;
 
-            //Päivitetään näytön lukemaa pistetilanteen muuttuessa
+            //Päivitetään näytön lukemaa pelin pistetilanteen muuttuessa
             pisteNaytto.BindTo(peli.Pisteet);
 
             //Muutetaan vielä sijaintia siten, että vasen reuna pysyy 50px vasemmasta reunasta vaikka pistelukema kasvaa
@@ -134,8 +132,6 @@ namespace SixShooter
             ennatysPisteNaytto.X = Game.Screen.Left + 50 + ennatysPisteNaytto.Width / 2;
             ennatysPisteNaytto.Y = 330;
             peli.Add(ennatysPisteNaytto);
-
-
         }
 
 
@@ -150,6 +146,7 @@ namespace SixShooter
             tasoNaytto.TextColor = Color.Red;
             tasoNaytto.TextScale = new Vector(1.5, 1.5);
 
+            //Labelin arvo päivittyy automaattisesti tason muuttuessa
             tasoNaytto.BindTo(peli.Taso);
 
             tasoNaytto.Title = "Taso";

@@ -116,27 +116,27 @@ namespace SixShooter
                 Console.WriteLine(this.Id + " tähtää");
                 Image = vihuKuvat[2];
 
-            //Odotetaan satunnainen aika, jonka jälkeen yritetään ampua. Aika lyhenee tasojen vaikeutuessa.
-            Timer.SingleShot(RandomGen.NextDouble(1.5, 3.0) / (peli.TasoKerroin * peli.TasoKerroin), delegate
-                {
-                //Yritys keskeytetään jos kyseinen vihollinen on kuollut tai peli on päättynyt tähtäämisen aikana
-                Console.WriteLine(this.Id + " yrittää ampua");
-                    if (!OnkoHengissa || !peli.OnkoKelloKaynnissa)
+                //Odotetaan satunnainen aika, jonka jälkeen yritetään ampua. Aika lyhenee tasojen vaikeutuessa.
+                Timer.SingleShot(RandomGen.NextDouble(1.5, 3.0) / (peli.TasoKerroin * peli.TasoKerroin), delegate
                     {
-                        Console.WriteLine(Id + " ei ampunut; OnkoHengissä: " + OnkoHengissa + " OnkoKelloKäynnissä : " + peli.OnkoKelloKaynnissa);
-                        return;
-                    }
-                //Ammutaan pelaajaa ja piiloudutaan.
-                Image = vihuKuvat[3];
-                    int laukausAani = RandomGen.NextInt(3);
-                    laukausAanet[laukausAani].Play();
+                    //Yritys keskeytetään jos kyseinen vihollinen on kuollut tai peli on päättynyt tähtäämisen aikana
+                    Console.WriteLine(this.Id + " yrittää ampua");
+                        if (!OnkoHengissa || !peli.OnkoKelloKaynnissa)
+                        {
+                            Console.WriteLine(Id + " ei ampunut; OnkoHengissä: " + OnkoHengissa + " OnkoKelloKäynnissä : " + peli.OnkoKelloKaynnissa);
+                            return;
+                        }
+                    //Ammutaan pelaajaa ja piiloudutaan.
+                    Image = vihuKuvat[3];
+                        int laukausAani = RandomGen.NextInt(3);
+                        laukausAanet[laukausAani].Play();
 
-                //Luo tapahtuman, jota peli-instanssi kuuntelee ja käsittelee tapahtuman
-                VihollinenAmpui();
-                    Console.WriteLine(Id + " ampui pelaajaa");
+                    //Luo tapahtuman, jota peli-instanssi kuuntelee ja käsittelee tapahtuman
+                    VihollinenAmpui();
+                        Console.WriteLine(Id + " ampui pelaajaa");
 
-                    Timer.SingleShot(0.2, Piilota);
-                });
+                        Timer.SingleShot(0.2, Piilota);
+                    });
             });
         }
 
@@ -242,19 +242,19 @@ namespace SixShooter
             //Odotellaan sopiva hetki, jonka jälkeen siirretään vihollinen takaisin lähtöpisteeseensä
             Timer.SingleShot(3, delegate
             {
-            //Siirretään vihollinen ensin piiloon ruudun yläreunaan...
-            Image = vihuKuvat[0];
+                //Siirretään vihollinen ensin ruudun yläreunaan...
+                Image = vihuKuvat[0];
                 Position = new Vector(alkupiste.X, alkupiste.Y + 3 * Height);
 
-            //...ja takaisin paikoilleen
-            double nopeus = Height;
+                //...ja takaisin paikoilleen
+                double nopeus = Height;
                 MoveTo(alkupiste, nopeus, delegate
                 {
                     Image = vihuKuvat[1];
                     OnkoHengissa = true;
                     OnkoPiilossa = true;
-                //Kuunnellaan jälleen pelaajan ammuskeluita
-                peli.Ase.AseellaAmmuttiin += OsuikoPelaaja;
+                    //Kuunnellaan jälleen pelaajan ammuskeluita
+                    peli.Ase.AseellaAmmuttiin += OsuikoPelaaja;
                 });
             });
         }

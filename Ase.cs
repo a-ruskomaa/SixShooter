@@ -16,21 +16,21 @@ namespace SixShooter
     /// </summary>
     public class Ase : GameObject
     {
-        private Peli peli;
 
         public delegate void AmpumisDelegaatti();
         public event AmpumisDelegaatti AseellaAmmuttiin;
 
         public IntMeter Ammukset { get; private set; }
+        public DoubleMeter bonusLaskuri { get; private set; }
+
+        private Peli peli;
 
         private bool latausKaynnissa;
 
         private Timer bonusAjastin;
-        public DoubleMeter bonusLaskuri { get; private set; }
 
         private Image[] asePerusKuvat;
         private Image[] aseLatausKuvat;
-
         private SoundEffect[] aseAanet;
 
         private Texture2D tahtainMusta;
@@ -174,8 +174,8 @@ namespace SixShooter
             //Muutetaan latausanimaation päätyttyä ase ampumakelpoiseksi. Toteutusta joudutaan muuttamaan jos aseen laukaiseminen latauksen aikana mahdollistetaan.
             Timer.SingleShot(1.5, delegate
             {
-            //Vaihdetaan tähtäin tavalliseksi
-            SetCursor(FromTexture2D(tahtainMusta, 25, 25));
+                //Vaihdetaan tähtäin tavalliseksi
+                SetCursor(FromTexture2D(tahtainMusta, 25, 25));
 
                 latausKaynnissa = false;
                 this.Image = asePerusKuvat[0];

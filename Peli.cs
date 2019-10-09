@@ -114,14 +114,14 @@ namespace SixShooter
             //Luodaan valikossa liikkumista varten paikallinen metodi
             void ValikossaLiikkuminen()
             {
-                    if (Mouse.IsCursorOn(aloita))
-                    {
+                if (Mouse.IsCursorOn(aloita))
+                {
                     aloita.Image = aloita_mouseover;
-                    }
-                    else
-                    {
+                }
+                else
+                {
                     aloita.Image = aloita_image;
-                    }
+                }
                 if (Mouse.IsCursorOn(lopeta))
                 {
                     lopeta.Image = lopeta_mouseover;
@@ -130,7 +130,7 @@ namespace SixShooter
                 {
                     lopeta.Image = lopeta_image;
                 }
-            
+
             }
 
             Mouse.ListenOn(aloita, MouseButton.Left, ButtonState.Pressed, AloitaUusiPeli, null);
@@ -214,7 +214,7 @@ namespace SixShooter
             {
                 EnnatysPisteet = DataStorage.Load<int>(EnnatysPisteet, "ennatyspisteet.xml");
             }
-            catch (System.IO.FileNotFoundException e)
+            catch (System.IO.FileNotFoundException)
             {
                 Console.WriteLine("Tiedostoa ennatyspisteet.xml ei löytynyt");
                 EnnatysPisteet = 0;
@@ -257,7 +257,7 @@ namespace SixShooter
         private Vector[] PaikkaVektorit()
         {
             XmlDocument sijainnitXML = new XmlDocument();
-            sijainnitXML.Load("sijainnit.xml");
+            sijainnitXML.Load("Content/sijainnit.xml");
 
             XmlNodeList nodes = sijainnitXML.SelectNodes("/sijainnit/vektori");
 
