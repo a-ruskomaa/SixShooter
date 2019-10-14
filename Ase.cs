@@ -186,11 +186,11 @@ namespace SixShooter
 
 
         /// <summary>
-        /// Aktivoi vihollisen eliminoimisesta palkinnoksi saadun bonuksen, joka mahdollistaa rajattomat ammukset 10s ajaksi
+        /// Aktivoi vihollisen eliminoimisesta palkinnoksi saadun bonuksen, joka mahdollistaa rajattomat ammukset viiden sekunnin ajaksi
         /// </summary>
         public void AktivoiBonus()
         {
-            peli.Kayttoliittyma.NaytaViesti("Rajattomat ammukset 10s", 1);
+            peli.Kayttoliittyma.NaytaViesti("Rajattomat ammukset 5s", 1);
 
             //Palautetaan laskuri täyteen
             bonusLaskuri.Value = bonusLaskuri.MaxValue;
@@ -204,7 +204,7 @@ namespace SixShooter
             {
                 bonusLaskuri.Value = bonusLaskuri.Value - 1;
             };
-            bonusAjastin.Start(10);
+            bonusAjastin.Start(5);
         }
     }
 }

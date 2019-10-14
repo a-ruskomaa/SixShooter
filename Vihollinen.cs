@@ -16,7 +16,7 @@ namespace SixShooter
         private Peli peli;
 
         public delegate void AmpumisDelegaatti();
-        public event AmpumisDelegaatti VihollinenAmpui;
+        public event AmpumisDelegaatti VihollinenOsui;
 
         public delegate void OsumisDelegaatti(Vihollinen vihu, Hitbox hitbox);
         public event OsumisDelegaatti PelaajaOsui;
@@ -30,6 +30,8 @@ namespace SixShooter
             Paa,
             Vartalo
         }
+
+        private GameObject suoja;
 
         private Vector alkupiste;
 
@@ -45,14 +47,14 @@ namespace SixShooter
         /// Luo uuden vihollisolion. Kutsuu yläluokan konstruktoria parametrinaan kutsussa saatu kuva. Tämä luo oikean kokoisen ja muotoisen peliolion, johon muut saadut parametrit liitetään.
         /// </summary>
         /// <param name="id">Peliolion tunnistenumero. Vastaa peliluokan taulukoiden indeksiä, jossa viite olioon sekä sen edessä olevaan esteeseen sijaitsevat.</param>
-        /// <param name="alkupiste">Vektori(x,y), johon peliolion keskipiste luodaan.</param>
+        /// <param name="sijainti">Vektori(x,y), johon peliolion keskipiste luodaan.</param>
         /// <param name="kerros">Kerros, jolle peliolio on sijoitettu pelikentällä. Käytetään kuvaamaan olion etäisyyttä kamerasta. Olin koko skaalataan parametrin perusteella.</param>
         /// <param name="kuvat">Taulukko, joka sisältää peliolion käyttämän grafiikan. Välitetään yläluokan konstruktorille.</param>
         /// <param name="peli">Peli-instanssi johon objekti on lisätty.</param>
-        public Vihollinen(int id, Vector alkupiste, int kerros, Image[] kuvat, SoundEffect[] aanet, Peli peli) : base(kuvat[1])
+        public Vihollinen(int id, Vector sijainti, int kerros, Image[] kuvat, SoundEffect[] aanet, Peli peli) : base(kuvat[1])
         {
             Id = id;
-            Position = alkupiste;
+
             this.peli = peli;
 
             if (kerros == 1)
@@ -61,20 +63,27 @@ namespace SixShooter
             }
             else if (kerros == -1)
             {
-                Size *= 0.6;
+                Size *= 0.55;
             }
             else if (kerros == -3)
             {
-                Size *= 0.5;
+                Size *= 0.45;
             }
+
+            //Vihollisen saamat koordinaatit ovat esteen yläreunan tasalla, siirretään alaspäin puolen pituuden verran
+            X = sijainti.X;
+            Y = sijainti.Y - Height / 2;
+            //Y = sijainti.Y;
+            //Tallennetaan sijainti myöhempää käyttöä varten
+            this.alkupiste = this.Position;
+
+            this.suoja = LuoEste();
 
             vihuKuvat = kuvat;
             laukausAanet = aanet;
 
             OnkoHengissa = true;
             OnkoPiilossa = true;
-
-            this.alkupiste = alkupiste;
 
             //Lisätään päälle ja vartalolle hitboxit sopiviin kohtiin. Vain hitboxeihin osuneet laukaukset rekisteröidään.
             hitboxVartalo = new GameObject(0.39 * this.Width, 0.45 * this.Height, Shape.Rectangle);
@@ -89,6 +98,22 @@ namespace SixShooter
 
             //Piilotetaan hitboxit
             DebugPiilotaHitbox();
+        }
+
+
+
+        /// <summary>
+        /// Luodaan pelaajan korkuinen näkymätön este. Pelaajan ampuessa vihollista tätä objektia
+        /// hyödynnetään tarkistaessa osuiko pelaaja suojaan, jonka takana vihollinen on.
+        /// </summary>
+        /// <returns>Palauttaa luodun esteen, jonka konstruktori lisää olion attribuutiksi</returns>
+        private GameObject LuoEste()
+        {
+            GameObject este = new GameObject(this.Width / 2, this.Height, Shape.Rectangle);
+            este.Position = this.Position;
+            este.Color = Color.Transparent;
+            peli.Add(este);
+            return este;
         }
 
 
@@ -116,28 +141,67 @@ namespace SixShooter
                 Console.WriteLine(this.Id + " tähtää");
                 Image = vihuKuvat[2];
 
-                //Odotetaan satunnainen aika, jonka jälkeen yritetään ampua. Aika lyhenee tasojen vaikeutuessa.
-                Timer.SingleShot(RandomGen.NextDouble(1.5, 3.0) / (peli.TasoKerroin * peli.TasoKerroin), delegate
-                    {
-                    //Yritys keskeytetään jos kyseinen vihollinen on kuollut tai peli on päättynyt tähtäämisen aikana
-                    Console.WriteLine(this.Id + " yrittää ampua");
-                        if (!OnkoHengissa || !peli.OnkoKelloKaynnissa)
-                        {
-                            Console.WriteLine(Id + " ei ampunut; OnkoHengissä: " + OnkoHengissa + " OnkoKelloKäynnissä : " + peli.OnkoKelloKaynnissa);
-                            return;
-                        }
-                    //Ammutaan pelaajaa ja piiloudutaan.
-                    Image = vihuKuvat[3];
-                        int laukausAani = RandomGen.NextInt(3);
-                        laukausAanet[laukausAani].Play();
 
-                    //Luo tapahtuman, jota peli-instanssi kuuntelee ja käsittelee tapahtuman
-                    VihollinenAmpui();
-                        Console.WriteLine(Id + " ampui pelaajaa");
-
-                        Timer.SingleShot(0.2, Piilota);
-                    });
+                //Odotetaan satunnainen aika, jonka jälkeen yritetään ampua. 
+                double tahtysAika = RandomGen.NextDouble(1.5, 3.0);
+                //Aika lyhenee tasojen vaikeutuessa.
+                Timer.SingleShot(tahtysAika / (peli.TasoKerroin * peli.TasoKerroin), delegate
+                   {
+                       Ammu(tahtysAika);
+                   });
             });
+        }
+
+
+        /// <summary>
+        /// Metodi vastaa vihollisen ampumisesta. Saa paramentrinaan tähtäämiseen käytetyn ajan, joka vaikuttaa vihollisen osumatarkkuuteen.
+        /// Vihollisen osuessa saa aikaan VihollinenOsui-tapahtuman, jota peli-instanssi kuuntelee
+        /// </summary>
+        /// <param name="tahtaysAika">Tähtäämiseen käytetty aika sekunteina (ilman tason vaikeutuessa nousevan kertoimen vaikutusta)</param>
+        private void Ammu(double tahtaysAika)
+        {
+            //Yritys keskeytetään jos kyseinen vihollinen on kuollut tai peli on päättynyt tähtäämisen aikana
+            Console.WriteLine(this.Id + " yrittää ampua");
+            if (!OnkoHengissa || !peli.OnkoKelloKaynnissa)
+            {
+                Console.WriteLine(Id + " ei ampunut; OnkoHengissä: " + OnkoHengissa + " OnkoKelloKäynnissä : " + peli.OnkoKelloKaynnissa);
+                return;
+            }
+            //Ammutaan kohti pelaajaa
+            Image = vihuKuvat[3];
+
+            //Arvotaan osuuko vihollinen. Osumatarkkuus paranee tähtäämiseen käytetyn ajan myötä.
+            //Parametrina saatu tahtaysAika kertoo ainoastaan tähtäyksen keston arvotun osuuden. Pelin vaikeutuminen ei vaikuta vihollisten osumatarkkuuteen.
+            double osumatarkkuus = 1.0;
+
+            if (tahtaysAika < 2.5 && tahtaysAika >= 2.0)
+            {
+                osumatarkkuus = 0.8;
+            }
+            if (tahtaysAika < 2)
+            {
+                osumatarkkuus = 0.5;
+            }
+
+            double random = RandomGen.NextDouble(0, 1.0);
+
+            bool osuu = random < osumatarkkuus;
+
+            if (osuu)
+            {
+                int laukausAani = RandomGen.NextInt(3) + 1;
+                laukausAanet[laukausAani].Play();
+
+                //Luo tapahtuman, jota peli-instanssi kuuntelee ja käsittelee tapahtuman
+                VihollinenOsui();
+                Console.WriteLine(Id + " osui pelaajaan. tahtays: " + tahtaysAika + "tarkkuus: " + osumatarkkuus + " random: " + random);
+            } else
+            {
+                laukausAanet[0].Play();
+                Console.WriteLine(Id + " ampui kohti pelaajaa, ei osunut. tahtays: " + tahtaysAika + "tarkkuus: " + osumatarkkuus + " random: " + random);
+            }
+
+            Timer.SingleShot(0.2, Piilota);
         }
 
 
@@ -160,6 +224,7 @@ namespace SixShooter
             });
         }
 
+
         /// <summary>
         /// Metodi, joka tarkistaa pelaajan ampuessa osuiko laukaus tähän olioon. Luo tapahtuman PelaajaOsui pelaajan osuessa.
         /// </summary>
@@ -167,7 +232,7 @@ namespace SixShooter
         {
             Console.WriteLine("Tarkistetaan osuiko pelaaja");
 
-            GameObject suoja = peli.Esteet[Id];
+            //GameObject suoja = peli.Esteet[Id];
             if (Game.Mouse.IsCursorOn(suoja))
             {
                 //Pelaaja osui esteeseen, ei viholliseen
@@ -185,22 +250,8 @@ namespace SixShooter
                 PelaajaOsui(this, Hitbox.Vartalo);
                 Kuole(Hitbox.Vartalo);
             }
-
-
-
-            /*        Alla oleva koodi palauttaa syystä tai toisesta aina false IsCursorOn-kyselylle ja johtaa NullReferenceExceptioniin
-             *        GameObject mihinOsui = null;
-                    if (Game.Mouse.IsCursorOn(HitboxPaa))
-                    {
-                        mihinOsui = HitboxPaa;
-                    }
-                    else if (Game.Mouse.IsCursorOn(HitboxVartalo))
-                    {
-                        mihinOsui = HitboxVartalo;
-                    }
-                    Kuole(mihinOsui);
-                    PelaajaOsui(this, mihinOsui);*/
         }
+
 
         /// <summary>
         /// Muuttaa peligrafiikkaa asianmukaisesti ja liikuttaa kuolleen vihollisen pois näkyviltä.
@@ -265,11 +316,13 @@ namespace SixShooter
         {
             this.hitboxVartalo.Color = Color.BloodRed;
             this.hitboxPaa.Color = Color.Red;
+            this.suoja.Color = Color.Gray;
         }
         public void DebugPiilotaHitbox()
         {
             this.hitboxVartalo.Color = Color.Transparent;
             this.hitboxPaa.Color = Color.Transparent;
+            this.suoja.Color = Color.Transparent;
         }
         public void DebugNaytaUkko()
         {

@@ -26,10 +26,10 @@ namespace SixShooter
         public Ase Ase { get; private set; }
         public IntMeter Pisteet { get; private set; }
         public int EnnatysPisteet { get; private set; }
+        public int EnnatysTaso { get; private set; }
         public IntMeter Hitpoints { get; private set; }
         public IntMeter Taso { get; private set; }
         public double TasoKerroin { get; private set; }
-        public GameObject[] Esteet { get; private set; }
         public bool OnkoKelloKaynnissa { get { return peliAjastin.Enabled; } }
 
         private Timer peliAjastin;
@@ -40,11 +40,12 @@ namespace SixShooter
         private SoundEffect tuomionKello;
         private Image[] osumaOverlayKuvat;
 
-        private List<Vihollinen> vihollisetPelissa;
+        private List<Vihollinen> viholliset;
         private List<Vihollinen> vihollisetHengissa;
 
         private bool debugmoodi;
         private bool debugHitboksit;
+        private bool debugKuolematon;
 
 
         /// <summary>
@@ -52,7 +53,7 @@ namespace SixShooter
         /// </summary>
         public override void Begin()
         {
-            LataaGrafiikka();
+            LataaGraafisetEfektit();
 
             LataaAaniefektit();
 
@@ -61,15 +62,17 @@ namespace SixShooter
 
 
         /// <summary>
-        /// Lataa pelin muiden elementtien käyttämät kuvatiedostot.
+        /// Lataa pelissä käytettäviä efektejä.
         /// </summary>
-        private void LataaGrafiikka()
+        private void LataaGraafisetEfektit()
         {
-            osumaOverlayKuvat = new Image[4];
+            osumaOverlayKuvat = new Image[6];
             osumaOverlayKuvat[0] = LoadImage("osuma00");
             osumaOverlayKuvat[1] = LoadImage("osuma10");
             osumaOverlayKuvat[2] = LoadImage("osuma20");
             osumaOverlayKuvat[3] = LoadImage("osuma30");
+            osumaOverlayKuvat[4] = LoadImage("osuma40");
+            osumaOverlayKuvat[5] = LoadImage("osuma50");
         }
 
 
@@ -153,8 +156,6 @@ namespace SixShooter
 
             LisaaViholliset();
 
-            LisaaEsteet();
-
             LuoKuuntelijat();
 
             Kayttoliittyma = new Kayttoliittyma(this);
@@ -180,28 +181,22 @@ namespace SixShooter
             Level.Background.Image = LoadImage("tausta_tyhja");
 
             //Piirretään taustan muut kerrokset
-            GameObject TaustaKerros0 = new GameObject(1024, 330, 0, -219);
-            TaustaKerros0.Image = LoadImage("tausta_ala330");
+            GameObject TaustaKerros0 = new GameObject(1024, 340, 0, -214);
+            TaustaKerros0.Image = LoadImage("tausta_layer-2");
             Add(TaustaKerros0, -2);
 
-            GameObject TaustaKerros1 = new GameObject(1024, 280, 0, -244);
-            TaustaKerros1.Image = LoadImage("tausta_ala280");
+            GameObject TaustaKerros1 = new GameObject(1024, 340, 0, -214);
+            TaustaKerros1.Image = LoadImage("tausta_layer0");
             Add(TaustaKerros1, 0);
 
-            GameObject TaustaKerros2 = new GameObject(1024, 200, 0, -284);
-            TaustaKerros2.Image = LoadImage("tausta_ala200");
+            GameObject TaustaKerros2 = new GameObject(1024, 340, 0, -214);
+            TaustaKerros2.Image = LoadImage("tausta_layer2");
             Add(TaustaKerros2, 2);
-
-            //Piirretään muuta rekvisiittaa
-            Image kaktukset = LoadImage("kaktukset");
-            GameObject taustaKaktukset = new GameObject(kaktukset);
-            Add(taustaKaktukset, 2);
-            taustaKaktukset.Position = new Vector(-23, -150);
         }
 
 
         /// <summary>
-        /// Alustaa pelin globaalit muuttujat, luo peliä ohjaavan ajastimen ja lataa keskeisimmät graafiset elementit.
+        /// Alustaa pelin globaalit muuttujat sekä luo peliä ohjaavan ajastimen.
         /// </summary>
         private void AlustaPelinMuuttujat()
         {
@@ -210,14 +205,18 @@ namespace SixShooter
             Pisteet = new IntMeter(0);
 
             //Kokeillaan löytyykö ulkoiseen tiedostoon tallennettuja ennätyspisteitä
-            try
+            if (DataStorage.Exists("paras_tulos.xml"))
             {
-                EnnatysPisteet = DataStorage.Load<int>(EnnatysPisteet, "ennatyspisteet.xml");
+                using (LoadState lataus = DataStorage.BeginLoad("paras_tulos.xml"))
+                {
+                    EnnatysPisteet = lataus.Load<int>(EnnatysPisteet, "parhaat_pisteet");
+                    EnnatysTaso = lataus.Load<int>(EnnatysTaso, "pisteiden_taso");
+                }
             }
-            catch (System.IO.FileNotFoundException)
+            else
             {
-                Console.WriteLine("Tiedostoa ennatyspisteet.xml ei löytynyt");
                 EnnatysPisteet = 0;
+                EnnatysTaso = 0;
             }
             Console.WriteLine("ennatyspisteet: " + EnnatysPisteet);
 
@@ -227,23 +226,13 @@ namespace SixShooter
             Taso = new IntMeter(0);
             TasoKerroin = 1;
 
-            //Luodaan mittari seuraamaan osumapisteitä. Osumapisteiden loppuessa pysäytetään kello ja päätetään peli.
+            //Luodaan mittari seuraamaan osumapisteitä.
             Hitpoints = new IntMeter(3);
-            Hitpoints.LowerLimit += delegate
-            {
-                PysaytaKello();
 
-                Console.WriteLine("GAME OVER!");
-                Kayttoliittyma.NaytaViesti("Peli ohi!", 5);
-
-                Timer.SingleShot(5, PeliPaattyi);
-            };
-
-            //Ajastin saa vihollisen hyökkäämään määräajoin. Aika pienenee tasojen noustessa.
+            //Ajastin saa vihollisen hyökkäämään määräajoin. Aika pienenee tasojen noustessa, intervallia säädetään metodilla SeuraavaTaso().
             peliAjastin = new Timer();
             peliAjastin.Interval = 3;
             peliAjastin.Timeout += ArvoSeuraavaAmpuja;
-
 
             //Haetaan etukäteen määritellyt esteiden ja vihollisten sijainnit
             sijainnit = PaikkaVektorit();
@@ -304,8 +293,8 @@ namespace SixShooter
 
 
         /// <summary>
-        /// Luo ennalta määritellyn määrän vihollis-olioita ja lisää ne peliin taulukon sijainnit[] sisältämiin paikkoihin.
-        /// Viholliset lisätään myös listoille vihollisetPelissa ja vihollisetHengissa joiden avulla peli-instanssi hakee tietoa vihollisista.
+        /// Luo kaikkiin sijainnit[] taulukossa määriteltyihin koordinaatteihin vihollisoliot ja lisää ne peliin.
+        /// Kaikki viholliset lisätään myös listalle 'viholliset', josta arvotaan jokaisen tason alussa kuusi vihollista listalle vihollisetHengissa.
         /// </summary>
         private void LisaaViholliset()
         {
@@ -320,84 +309,66 @@ namespace SixShooter
             vihuKuvat[6] = LoadImage("vihu_kuollut");
 
             //Ladataan vihollisten peliäänet
-            SoundEffect[] vihuAanet = new SoundEffect[3];
-            vihuAanet[0] = LoadSoundEffect("enemy_gunshot_1");
-            vihuAanet[1] = LoadSoundEffect("enemy_gunshot_2");
-            vihuAanet[2] = LoadSoundEffect("enemy_gunshot_3");
+            SoundEffect[] vihuAanet = new SoundEffect[4];
+            vihuAanet[0] = LoadSoundEffect("enemy_gunshot_miss");
+            vihuAanet[1] = LoadSoundEffect("enemy_gunshot_1");
+            vihuAanet[2] = LoadSoundEffect("enemy_gunshot_2");
+            vihuAanet[3] = LoadSoundEffect("enemy_gunshot_3");
 
             //Lisätään vihollisia varten tyhjä lista. Listan avulla helpotetaan oikean kokoisten esteiden piirtämistä ja se toimii reservinä, josta uuden tason alkaessa kopioidaan viitteet henkiin herätettyihin vihollisiin.
-            vihollisetPelissa = new List<Vihollinen>();
+            viholliset = new List<Vihollinen>();
 
-            //Loopataan taulukon läpi ja lisätään viholliset ennalta määriteltyihin koordinaatteihin
+            //Loopataan sijainnit sisältävän taulukon läpi ja lisätään viholliset sekä esteet vastaaviin kohtiin
             for (int i = 0; i < sijainnit.Length; i++)
             {
-                int kerros = -3;
+                int kerros = 1;
 
-                if (i > 1)
+                if (i > 2)
                 {
                     kerros = -1;
                 }
 
-                if (i > 3)
+                if (i > 5)
                 {
-                    kerros = 1;
+                    kerros = -3;
                 }
 
-                Vihollinen vihu = new Vihollinen(id: i, alkupiste: sijainnit[i], kerros, vihuKuvat, vihuAanet, peli: this);
+                Vihollinen vihu = new Vihollinen(id: i, sijainti: sijainnit[i], kerros, vihuKuvat, vihuAanet, peli: this);
 
                 //Lisätään tapahtumankäsittelijä kuuntelemaan vihollisen Ampui()-tapahtumaa
-                vihu.VihollinenAmpui += KasitteleOsumaPelaajaan;
+                vihu.VihollinenOsui += KasitteleOsumaPelaajaan;
 
                 vihu.PelaajaOsui += KasitteleOsumaViholliseen;
 
-                //Ilmeisesti lapsiobjektien lisääminen siirtää vanhemmat yhtä kerrosta alemmas...
-                //Vanhemmat (eli peligrafiikan sisältävät objektit) piirretään siksi kerrosta ylöspäin kuin mikä haluttu sijoitus on
                 Add(vihu, kerros);
-                vihollisetPelissa.Add(vihu);
-
+                viholliset.Add(vihu);
             }
+
+            //Arvotaan kaikista vihollisista kuusi ensimmäistä tasoa varten
+            vihollisetHengissa = ArvoTasonViholliset(6, viholliset);
 
             //Pelin kehitysvaiheen attribuutteja
             debugHitboksit = false;
-
-            //Lisätään peliin lisätyt viholliset myös hengissä olevien listaan ensimmäistä tasoa varten
-            vihollisetHengissa = new List<Vihollinen>();
-            vihollisetHengissa.AddRange(vihollisetPelissa);
         }
 
 
         /// <summary>
-        /// Luo peligrafiikkaan piirrettyjen laatikoiden ja tynnyrien kohdalle näkymättömät objektit joiden läpi vihollisia ei voi ampua.
-        /// Ominaisuuden toteuttava logiikka on lisättynä metodiin KasitteleOsumaViholliseen(). Toteutusmalli ei ole lopullinen.
+        /// Metodi arpoo sattumanvaraiset viholliset parametrina annetulta listalta ja palauttaa ne uudella listalla.
         /// </summary>
-        private void LisaaEsteet()
+        /// <param name="kaikkiVihut">Lista, jolta viholliset arvotaan</param>
+        /// <returns>Palauttaa listan, joka sisältää sattumanvaraiset kuusi vihollista</returns>
+        private List<Vihollinen> ArvoTasonViholliset(int maara, List<Vihollinen> kaikkiVihut)
         {
-            //Lisätään esteitä varten tyhjät taulukko
-            Esteet = new GameObject[sijainnit.Length];
+            List<Vihollinen> arvotutVihut = new List<Vihollinen>();
+            arvotutVihut.AddRange(kaikkiVihut);
 
-            //Loopataan taulukon läpi ja lisätään esteet. Taulukkoon 'sijainnit[]' on tallennettu esteiden haluttu keskipiste. Esteiden koko määritellään suhteessa niiden taakse piiloutuviin vihollisiin.
-            //Vihollisten tavoin esteet lisätään kerroksittain, joskaan tällä ei tämänhetkisen toteutuksen kannalta ole käytännössä merkitystä.
-            for (int i = 0; i < Esteet.Length; i++)
+            while (arvotutVihut.Count > maara)
             {
-                GameObject este = new GameObject(vihollisetPelissa[i].Width / 2, vihollisetPelissa[i].Height, Shape.Rectangle);
-                Esteet[i] = este;
-
-                este.Position = sijainnit[i];
-                este.Color = Color.Transparent;
-
-                int kerros = -3;
-
-                if (i > 1)
-                {
-                    kerros = -3;
-                }
-
-                if (i > 3)
-                {
-                    kerros = -3;
-                }
-                Add(este, kerros);
+                Vihollinen seuraavaVihu = RandomGen.SelectOne<Vihollinen>(arvotutVihut);
+                arvotutVihut.Remove(seuraavaVihu);
             }
+
+            return arvotutVihut;
         }
 
 
@@ -414,6 +385,7 @@ namespace SixShooter
             Mouse.Listen(MouseButton.Left, ButtonState.Pressed, Ase.LaukaiseAse, "Ammu");
             Mouse.Listen(MouseButton.Right, ButtonState.Pressed, Ase.LataaAse, "Lataa");
 
+            Keyboard.Listen(Key.F7, ButtonState.Pressed, DebugKuolemattomuus, "Säätää Debug-moodissa kuolemattomuuden päälle/pois");
             Keyboard.Listen(Key.F8, ButtonState.Pressed, Debug, "Säätää Debug-moodin päälle/pois");
             Keyboard.Listen(Key.F9, ButtonState.Pressed, DebugPaallePois, "Säätää Debug-moodissa pelikellon päälle/pois");
             Keyboard.Listen(Key.F10, ButtonState.Pressed, DebugNaytaHitboksit, "Näyttää debug-moodissa ukkojen ja esteiden hitboksit");
@@ -422,7 +394,7 @@ namespace SixShooter
 
 
         /// <summary>
-        /// Vastaa pelimekaniikan käynnistämisestä uuden tason alkaessa, mahdollistaa aseella ampumisen.
+        /// Vastaa pelimekaniikan käynnistämisestä uuden tason alkaessa.
         /// </summary>
         private void KaynnistaKello()
         {
@@ -465,7 +437,7 @@ namespace SixShooter
 
 
         /// <summary>
-        /// Käynnistää pelistä seuraavan tason. Viholliset palautetaan henkiin ja alkupisteisiinsä. Metodi nostaa myös. tasokerrointa, joka nopeuttaa vihollisten hyökkäysfrekvenssiä sekä hyökkäyksen nopeutta.
+        /// Käynnistää pelistä seuraavan tason. Uudet viholliset palautetaan henkiin ja alkupisteisiinsä. Metodi nostaa myös tasokerrointa, joka nopeuttaa vihollisten hyökkäysfrekvenssiä sekä hyökkäyksen kestoa.
         /// </summary>
         private void SeuraavaTaso()
         {
@@ -477,7 +449,6 @@ namespace SixShooter
                 tiktak4s.Play();
             });
 
-
             Timer.SingleShot(3, delegate
             {
                 Taso.Value += 1;
@@ -485,8 +456,8 @@ namespace SixShooter
                 Pisteet.Value += 500;
             });
 
-            //Kopioidaan kaikkien peliin lisättyjen vihollisten viitteet takaisin hengissä olevien listalle.
-            vihollisetHengissa.AddRange(vihollisetPelissa);
+            //Arvotaan seuraavan tason kuusi vihollista
+            vihollisetHengissa = ArvoTasonViholliset(6, viholliset);
 
             foreach (var vihu in vihollisetHengissa)
             {
@@ -506,8 +477,8 @@ namespace SixShooter
 
         /// <summary>
         /// Tapahtumankäsittelijä aktivoi metodin kun vihollisolion PelaajaOsui-tapahtuma aktivoituu.
-        /// Lisää pelaajalle pisteitä ja mahdolisen bonuksen laukauksen osumakohdan perusteella. Poistaa vihollisen 
-        /// Tarkistaa myös oliko vihollinen tason viimeinen ja saa aikaan seuraavan tason aktivoitumisen jos oli.
+        /// Lisää pelaajalle pisteitä ja mahdolisen bonuksen osumakohdan perusteella. Poistaa vihollisen hengissä olevien listalta.
+        /// Tarkistaa myös oliko vihollinen tason viimeinen ja käynnistää tällöin seuraavan tason.
         /// </summary>
         /// <param name="vihu">Viite viholliseen, johon on osuttu.</param>
         /// <param name="hitbox">Enum-tyyppinen muuttuja, joka kertoo mihin vihollista on osunut.</param>
@@ -539,7 +510,7 @@ namespace SixShooter
 
 
         /// <summary>
-        /// Arpoo pelaajalle mahdollisuuden saada bonus vihollisen kuoleman jälkeen.
+        /// Arpoo pelaajalle mahdollisuuden saada bonus vihollisen kuoleman jälkeen. Vaatii refaktoroinnin.
         /// </summary>
         /// <param name="saadutPisteet">Viholliselta saadut pisteet, joista päätellään mihin kohtaan pelaaja osui. Bonuksen todennäköisyys kasvaa pääosuman jälkeen.</param>
         private void ArvoBonus(int saadutPisteet)
@@ -564,19 +535,54 @@ namespace SixShooter
 
         /// <summary>
         /// Vastaa toiminnoista, jotka aktivoituvat vihollisen ampuessa pelaajaa.
-        /// Viite metodiin on liitetty tapahtumankäsittelijällä vihollisolion Ampui()-tapahtumaan.
+        /// Reagoi vihollisolion VihollinenOsui-tapahtumaan.
         /// </summary>
         public void KasitteleOsumaPelaajaan()
         {
-            //Luodaan efekti, jossa ruutu välähtää hetkellisesti punaisena pelaajan saadessa osuman
-            GameObject osumaOverlay = new GameObject(1024, 768);
-            Add(osumaOverlay, 3);
-            osumaOverlay.Image = osumaOverlayKuvat[2];
-            Timer.SingleShot(0.05, delegate { osumaOverlay.Image = osumaOverlayKuvat[1]; });
-            Timer.SingleShot(0.1, delegate { Remove(osumaOverlay); });
-
+            if (debugKuolematon)
+            {
+                return;
+            }
 
             Hitpoints.Value -= 1;
+
+            //Luodaan efekti, jossa ruutu välähtää hetkellisesti punaisena pelaajan saadessa osuman. Efektin intensiteetti riippuu pelaajan osumapisteiden määrästä.
+            GameObject osumaOverlay = new GameObject(1024, 768);
+            Add(osumaOverlay, 3);
+
+            if (Hitpoints > 3)
+            {
+                osumaOverlay.Image = osumaOverlayKuvat[2];
+                Timer.SingleShot(0.05, delegate { osumaOverlay.Image = osumaOverlayKuvat[1]; });
+                Timer.SingleShot(0.1, delegate { Remove(osumaOverlay); });
+                return;
+            }
+
+            if (Hitpoints > 0)
+            {
+                osumaOverlay.Image = osumaOverlayKuvat[3];
+                Timer.SingleShot(0.05, delegate { osumaOverlay.Image = osumaOverlayKuvat[2]; });
+                Timer.SingleShot(0.1, delegate { osumaOverlay.Image = osumaOverlayKuvat[1]; });
+                Timer.SingleShot(0.15, delegate { Remove(osumaOverlay); });
+                return;
+            }
+
+            //Osumapisteiden loppuessa pysäytetään kello ja päätetään peli.
+            if (Hitpoints == 0)
+            {
+                PysaytaKello();
+
+                osumaOverlay.Image = osumaOverlayKuvat[5];
+                Timer.SingleShot(0.2, delegate { osumaOverlay.Image = osumaOverlayKuvat[4]; });
+                Timer.SingleShot(0.4, delegate { osumaOverlay.Image = osumaOverlayKuvat[3]; });
+                Timer.SingleShot(0.6, delegate { osumaOverlay.Image = osumaOverlayKuvat[2]; });
+                Timer.SingleShot(0.8, delegate { osumaOverlay.Image = osumaOverlayKuvat[1]; });
+
+                Console.WriteLine("GAME OVER!");
+                Kayttoliittyma.NaytaViesti("Peli ohi!", 5);
+
+                Timer.SingleShot(5, PeliPaattyi);
+            }
         }
 
 
@@ -588,8 +594,14 @@ namespace SixShooter
             if (Pisteet.Value > EnnatysPisteet)
             {
                 EnnatysPisteet = Pisteet.Value;
+                EnnatysTaso = Taso;
                 Console.WriteLine("Ennatyspisteet :" + EnnatysPisteet);
-                DataStorage.Save<int>(EnnatysPisteet, "ennatyspisteet.xml");
+                using (SaveState tallennus = DataStorage.BeginSave("paras_tulos.xml"))
+                {
+                    tallennus.Save<int>(EnnatysPisteet, "parhaat_pisteet");
+                    tallennus.Save<int>(EnnatysTaso, "pisteiden_taso");
+                }
+
             }
             Microsoft.Xna.Framework.Input.Mouse.SetCursor(Microsoft.Xna.Framework.Input.MouseCursor.Arrow);
             NaytaAlkuvalikko();
@@ -603,7 +615,7 @@ namespace SixShooter
             if (!debugmoodi)
             {
                 MessageDisplay.TextColor = Color.Red;
-                MessageDisplay.Add("DEBUG");
+                Kayttoliittyma.NaytaViesti("debug päällä", 1);
                 debugmoodi = true;
                 return;
             }
@@ -611,7 +623,7 @@ namespace SixShooter
             if (debugmoodi)
             {
                 MessageDisplay.TextColor = Color.Black;
-                MessageDisplay.Clear();
+                Kayttoliittyma.NaytaViesti("debug pois", 1);
                 debugmoodi = false;
                 return;
             }
@@ -625,10 +637,9 @@ namespace SixShooter
 
             if (!debugHitboksit)
             {
-                foreach (var ukko in vihollisetPelissa)
+                foreach (var ukko in viholliset)
                 {
                     ukko.DebugNaytaHitbox();
-                    Esteet[ukko.Id].Color = Color.Gray;
                 }
                 debugHitboksit = true;
                 return;
@@ -636,10 +647,9 @@ namespace SixShooter
 
             if (debugHitboksit)
             {
-                foreach (var ukko in vihollisetPelissa)
+                foreach (var ukko in viholliset)
                 {
                     ukko.DebugPiilotaHitbox();
-                    Esteet[ukko.Id].Color = Color.Transparent;
                 }
                 debugHitboksit = false;
                 return;
@@ -656,6 +666,8 @@ namespace SixShooter
             TasoKerroin = 1 + Taso / 10.0;
 
             Kayttoliittyma.DebugVaihdaTaso();
+
+            Kayttoliittyma.NaytaViesti("taso + 1", 1);
         }
 
         private void DebugPaallePois()
@@ -674,6 +686,25 @@ namespace SixShooter
             {
                 KaynnistaKello();
                 Kayttoliittyma.NaytaViesti("kello käynnistetty", 1);
+            }
+        }
+        
+        private void DebugKuolemattomuus()
+        {
+            if (!debugmoodi)
+            {
+                return;
+            }
+
+            if (debugKuolematon)
+            {
+                debugKuolematon = false;
+                Kayttoliittyma.NaytaViesti("kuolemattomuus pois", 1);
+            }
+            else
+            {
+                debugKuolematon = true;
+                Kayttoliittyma.NaytaViesti("kuolemattomuus päällä", 1);
             }
         }
     }

@@ -128,7 +128,7 @@ namespace SixShooter
             //Luodaan label joka näyttää nykyiset ennätyspisteet. Päivittyy vain uuden pelin alussa.
             Label ennatysPisteNaytto = new Label();
             ennatysPisteNaytto.TextColor = Color.Red;
-            ennatysPisteNaytto.Text = "Parhaat pisteet: " + peli.EnnatysPisteet.ToString();
+            ennatysPisteNaytto.Text = "Paras tulos: " + peli.EnnatysPisteet.ToString() + " (Taso " + peli.EnnatysTaso.ToString() + ")";
             ennatysPisteNaytto.X = Game.Screen.Left + 50 + ennatysPisteNaytto.Width / 2;
             ennatysPisteNaytto.Y = 330;
             peli.Add(ennatysPisteNaytto);
@@ -158,15 +158,15 @@ namespace SixShooter
 
 
         /// <summary>
-        /// Luo labelin, joka näyttää olion tasoAjastin arvon. Ajastin käynnistetään metodista KaynnistaTasoAjastin(), jota
-        /// kutsuu tapahtumankäsittelijä saatuaan peliltä tiedon tason vaihtumisesta
+        /// Luo labelin, joka näyttää olion ajastinLaskuri arvon. Käyttöliittymän konstruktorissa luodaan tapahtumankäsittelijä,
+        /// joka käynnistää ajastimen automaattisesti tason vaihtuessa.
         /// </summary>
         private void luoAjastinNaytto()
         {
             ajastinLaskuri = new IntMeter(0);
             ajastinLaskuri.MaxValue = 3;
 
-            //Näytetään ja piilotetaan ajastin automaattisesti sen käynnistyessä
+            //Laitetaan ajastin näkymään ja piiloutumaan automaattisesti
             ajastinLaskuri.UpperLimit += delegate
             {
                 tasoNaytto.IsVisible = false;
@@ -185,6 +185,7 @@ namespace SixShooter
             ajastinNaytto.TextColor = Color.Red;
             ajastinNaytto.TextScale = new Vector(2, 2);
 
+            //Ajastinmen näkymä on sidottu ajastinLaskurin arvoon
             ajastinNaytto.BindTo(ajastinLaskuri);
 
             ajastinNaytto.IsVisible = false;
@@ -194,13 +195,13 @@ namespace SixShooter
 
 
         /// <summary>
-        /// Luo labelin, jonka avulla peli voi näyttää pelaajalle viestejä.
+        /// Luo labelin, jonka avulla voidaan näyttää pelaajalle viestejä.
         /// </summary>
         private void LuoViestiNaytto()
         {
             viestiNaytto = new Label();
             viestiNaytto.X = 0;
-            viestiNaytto.Y = 320;
+            viestiNaytto.Y = 300;
             viestiNaytto.TextColor = Color.Red;
             viestiNaytto.TextColor = Color.Red;
             viestiNaytto.TextScale = new Vector(1.5, 1.5);
