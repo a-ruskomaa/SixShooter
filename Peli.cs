@@ -160,6 +160,8 @@ namespace SixShooter
 
             Kayttoliittyma = new Kayttoliittyma(this);
 
+            Kayttoliittyma.TahtainPois();
+
             Kayttoliittyma.NaytaViesti("Peli alkaa...", 3);
             tiktak4s.Play();
 
@@ -267,28 +269,13 @@ namespace SixShooter
 
 
         /// <summary>
-        /// Lataa aseessa käytetyn grafiikan sekä ääänet ja kutsuu Ase-luokan konstruktoria. Mikäli peliin lisätään myöhemmässä vaiheessa muita aseita, siirretään peligrafiikan lataus Ase-luokan sisälle.
+        /// Luo peliin aseen
         /// </summary>
         private void LisaaAse()
         {
-            Image[] asePerusKuvat = new Image[2];
-            asePerusKuvat[0] = LoadImage("pelaajan_ase");
-            asePerusKuvat[1] = LoadImage("pelaajan_ase_laukaus");
-
-            Image[] aseLatausKuvat = new Image[7];
-            aseLatausKuvat[0] = LoadImage("pelaajan_ase_0");
-            aseLatausKuvat[1] = LoadImage("pelaajan_ase_1");
-            aseLatausKuvat[2] = LoadImage("pelaajan_ase_2");
-            aseLatausKuvat[3] = LoadImage("pelaajan_ase_3");
-            aseLatausKuvat[4] = LoadImage("pelaajan_ase_4");
-            aseLatausKuvat[5] = LoadImage("pelaajan_ase_5");
-            aseLatausKuvat[6] = LoadImage("pelaajan_ase_6");
-
-            SoundEffect[] aseAanet = new SoundEffect[2];
-            aseAanet[0] = LoadSoundEffect("player_gunshot_1");
-            aseAanet[1] = LoadSoundEffect("player_reload");
-
-            this.Ase = new Ase(this, asePerusKuvat, aseLatausKuvat, aseAanet);
+            this.Ase = new Ase(this);
+            //Piirretään ase kolmannelle layerille, jotta se peittää alleen muun grafiikan
+            Add(Ase, 3);
         }
 
 
@@ -385,11 +372,11 @@ namespace SixShooter
             Mouse.Listen(MouseButton.Left, ButtonState.Pressed, Ase.LaukaiseAse, "Ammu");
             Mouse.Listen(MouseButton.Right, ButtonState.Pressed, Ase.LataaAse, "Lataa");
 
-            Keyboard.Listen(Key.F7, ButtonState.Pressed, DebugKuolemattomuus, "Säätää Debug-moodissa kuolemattomuuden päälle/pois");
-            Keyboard.Listen(Key.F8, ButtonState.Pressed, Debug, "Säätää Debug-moodin päälle/pois");
-            Keyboard.Listen(Key.F9, ButtonState.Pressed, DebugPaallePois, "Säätää Debug-moodissa pelikellon päälle/pois");
-            Keyboard.Listen(Key.F10, ButtonState.Pressed, DebugNaytaHitboksit, "Näyttää debug-moodissa ukkojen ja esteiden hitboksit");
-            Keyboard.Listen(Key.F11, ButtonState.Pressed, DebugSeuraavaTaso, "Vaihtaa debug-moodissa seuraavalle tasolle");
+            Keyboard.Listen(Key.F9, ButtonState.Pressed, Debug, "Säätää Debug-moodin päälle/pois");
+            Keyboard.Listen(Key.F5, ButtonState.Pressed, DebugKelloPaallePois, "Säätää Debug-moodissa pelikellon päälle/pois");
+            Keyboard.Listen(Key.F6, ButtonState.Pressed, DebugKuolemattomuus, "Säätää Debug-moodissa kuolemattomuuden päälle/pois");
+            Keyboard.Listen(Key.F7, ButtonState.Pressed, DebugNaytaHitboksit, "Näyttää debug-moodissa ukkojen ja esteiden hitboksit");
+            Keyboard.Listen(Key.F8, ButtonState.Pressed, DebugSeuraavaTaso, "Vaihtaa debug-moodissa seuraavalle tasolle");
         }
 
 
@@ -400,7 +387,7 @@ namespace SixShooter
         {
             tuomionKello.Play();
             peliAjastin.Start();
-            //SetCursor(FromTexture2D(tahtainMusta, 25, 25));
+            Kayttoliittyma.TahtainPaalle();
             Console.WriteLine("Pelikello käynnistetty");
         }
 
@@ -411,7 +398,7 @@ namespace SixShooter
         private void PysaytaKello()
         {
             peliAjastin.Stop();
-            //SetCursor(FromTexture2D(noCanShoot, 25, 25));
+            Kayttoliittyma.TahtainPois();
             Console.WriteLine("Pelikello pysäytetty");
         }
 
@@ -661,16 +648,18 @@ namespace SixShooter
             {
                 return;
             }
+            PysaytaKello();
 
-            Taso.Value += 1;
-            TasoKerroin = 1 + Taso / 10.0;
+            vihollisetHengissa = new List<Vihollinen>();
+
+            SeuraavaTaso();
 
             Kayttoliittyma.DebugVaihdaTaso();
 
             Kayttoliittyma.NaytaViesti("taso + 1", 1);
         }
 
-        private void DebugPaallePois()
+        private void DebugKelloPaallePois()
         {
             if (!debugmoodi)
             {

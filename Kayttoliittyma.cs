@@ -4,6 +4,9 @@ using Jypeli;
 using Jypeli.Assets;
 using Jypeli.Controls;
 using Jypeli.Widgets;
+using Microsoft.Xna.Framework.Graphics;
+using static Microsoft.Xna.Framework.Input.Mouse;
+using static Microsoft.Xna.Framework.Input.MouseCursor;
 
 
 namespace SixShooter
@@ -31,6 +34,9 @@ namespace SixShooter
 
         private GameObject ammuksetUI;
         private GameObject hitpointsUI;
+
+        private Texture2D tahtainMusta;
+        private Texture2D noCanShoot;
 
 
         /// <summary>
@@ -76,6 +82,13 @@ namespace SixShooter
 
                 tasoAjastin.Start(3);
             };
+
+
+            //Ladataan tähtäin kuvatiedostosta
+            tahtainMusta = Game.Instance.Content.Load<Texture2D>("tahtain_musta");
+
+            //Ladataan kuvatiedosto, joka näytetään kun aseella ei voi ampua 
+            noCanShoot = Game.Instance.Content.Load<Texture2D>("no_can_shoot");
         }
 
 
@@ -253,6 +266,27 @@ namespace SixShooter
             });
         }
 
+
+        /// <summary>
+        /// Julkinen luokkametodi. Vaihtaa hiiren kursorin tilalle mustan tähtäinkuvion.
+        /// </summary>
+        public void TahtainPaalle()
+        {
+            if (peli.Ase.OnkoLatausKaynnissa || !peli.OnkoKelloKaynnissa)
+            {
+                return;
+            }
+
+            SetCursor(FromTexture2D(tahtainMusta, 25, 25));
+        }
+
+        /// <summary>
+        /// Julkinen luokkametodi. Vaihtaa hiiren kursorin tilalle kuvion, joka ilmaisee ettei aseella voi ampua.
+        /// </summary>
+        public void TahtainPois()
+        {
+            SetCursor(FromTexture2D(noCanShoot, 25, 25));
+        }
 
         // Vain pelin kehitystä varten oleva metodi
         public void DebugVaihdaTaso()

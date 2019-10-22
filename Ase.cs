@@ -4,9 +4,6 @@ using Jypeli;
 using Jypeli.Assets;
 using Jypeli.Controls;
 using Jypeli.Widgets;
-using Microsoft.Xna.Framework.Graphics;
-using static Microsoft.Xna.Framework.Input.Mouse;
-using static Microsoft.Xna.Framework.Input.MouseCursor;
 
 namespace SixShooter
 {
@@ -25,7 +22,7 @@ namespace SixShooter
 
         private Peli peli;
 
-        private bool latausKaynnissa;
+        public bool OnkoLatausKaynnissa { get; private set; }
 
         private Timer bonusAjastin;
 
@@ -33,8 +30,6 @@ namespace SixShooter
         private Image[] aseLatausKuvat;
         private SoundEffect[] aseAanet;
 
-        private Texture2D tahtainMusta;
-        private Texture2D noCanShoot;
 
 
 
@@ -45,21 +40,12 @@ namespace SixShooter
         /// <param name="asePeruskuvat">Taulukko, joka sisältää aseen normaalin kuvan sekä laukauksen aukaisen kuvan</param>
         /// <param name="aseLatauskuvat">Taulukko, joka sisältää kuvasarjan aseen lataamisesta</param>
         /// <param name="aseAanet">Taulukko, joka sisältää aseeseen liittyvät äänitehosteet</param>
-        public Ase(Peli peli, Image[] asePeruskuvat, Image[] aseLatauskuvat, SoundEffect[] aseAanet) : base(asePeruskuvat[0])
+        public Ase(Peli peli) : base(450, 400)
         {
             this.peli = peli;
-            this.asePerusKuvat = asePeruskuvat;
-            this.aseLatausKuvat = aseLatauskuvat;
-            this.aseAanet = aseAanet;
 
-            //Ladataan tähtäin kuvatiedostosta
-            tahtainMusta = Game.Instance.Content.Load<Texture2D>("tahtain_musta");
-
-            //Ladataan kuvatiedosto, joka näytetään kun aseella ei voi ampua 
-            noCanShoot = Game.Instance.Content.Load<Texture2D>("no_can_shoot");
-
-            //Vaihdetaan hiiren kursorin tilalle tähtäimen kuva
-            SetCursor(FromTexture2D(tahtainMusta, 25, 25));
+            LataaGrafiikkaJaAanet();
+            this.Image = asePerusKuvat[0];
 
             this.Y = -384;
             this.X = 384;
@@ -72,9 +58,33 @@ namespace SixShooter
             //Luodaan bonuksen aktivoituessa käynnistyvä ajastin
             bonusAjastin = new Timer();
             bonusLaskuri = new DoubleMeter(0);
-            bonusLaskuri.MaxValue = 10;
+            bonusLaskuri.MaxValue = 5;
         }
 
+
+        /// <summary>
+        /// Lataa aseessa käytetyn grafiikan sekä ääänet ja kutsuu Ase-luokan konstruktoria. Mikäli peliin lisätään myöhemmässä vaiheessa muita aseita, siirretään peligrafiikan lataus Ase-luokan sisälle.
+        /// </summary>
+        private void LataaGrafiikkaJaAanet()
+        {
+            asePerusKuvat = new Image[2];
+            asePerusKuvat[0] = Game.LoadImage("pelaajan_ase");
+            asePerusKuvat[1] = Game.LoadImage("pelaajan_ase_laukaus");
+
+            aseLatausKuvat = new Image[7];
+            aseLatausKuvat[0] = Game.LoadImage("pelaajan_ase_0");
+            aseLatausKuvat[1] = Game.LoadImage("pelaajan_ase_1");
+            aseLatausKuvat[2] = Game.LoadImage("pelaajan_ase_2");
+            aseLatausKuvat[3] = Game.LoadImage("pelaajan_ase_3");
+            aseLatausKuvat[4] = Game.LoadImage("pelaajan_ase_4");
+            aseLatausKuvat[5] = Game.LoadImage("pelaajan_ase_5");
+            aseLatausKuvat[6] = Game.LoadImage("pelaajan_ase_6");
+
+            aseAanet = new SoundEffect[2];
+            aseAanet[0] = Game.LoadSoundEffect("player_gunshot_1");
+            aseAanet[1] = Game.LoadSoundEffect("player_reload");
+        }
+        
 
         /// <summary>
         /// Metodi vastaa aseen liikuttamista ruudulla hiirtä liikuttaessa. Ase liikkuu vain x-akselin suhteen.
@@ -110,7 +120,7 @@ namespace SixShooter
             {
                 return;
             }
-            if (latausKaynnissa)
+            if (OnkoLatausKaynnissa)
             {
                 return;
             }
@@ -145,16 +155,16 @@ namespace SixShooter
         public void LataaAse()
         {
             //Tarkistetaan, onko edellinen lataaminen päättynyt
-            if (latausKaynnissa)
+            if (OnkoLatausKaynnissa)
             {
                 return;
             }
 
-            latausKaynnissa = true;
+            OnkoLatausKaynnissa = true;
             Ammukset.Value = 0;
 
             //Vaihdetaan tähtäimen tilalle toinen kuva ilmaisemaan että ampuminen ei onnistu.
-            SetCursor(FromTexture2D(noCanShoot, 25, 25));
+            peli.Kayttoliittyma.TahtainPois();
 
             //Käynnistetään aseen latausta esittävä animaatio ja lisätään jokaisella ajastimen kierroksella ammuksia käytettäväksi.
             //Lisätään tänne myöhemmin tapahtumankäsittelijä, joka kuuntelee tapahtuuko aseen laukaisuyritys.
@@ -174,10 +184,10 @@ namespace SixShooter
             //Muutetaan latausanimaation päätyttyä ase ampumakelpoiseksi. Toteutusta joudutaan muuttamaan jos aseen laukaiseminen latauksen aikana mahdollistetaan.
             Timer.SingleShot(1.5, delegate
             {
+                OnkoLatausKaynnissa = false;
                 //Vaihdetaan tähtäin tavalliseksi
-                SetCursor(FromTexture2D(tahtainMusta, 25, 25));
+                peli.Kayttoliittyma.TahtainPaalle();
 
-                latausKaynnissa = false;
                 this.Image = asePerusKuvat[0];
                 Console.WriteLine("Ase ladattu");
             });

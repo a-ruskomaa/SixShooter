@@ -440,18 +440,6 @@
 /processorParam:TextureFormat=Color
 /build:pelaajan_ase_laukaus.png
 
-#begin pelaajan_ase_tyhja.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:pelaajan_ase_tyhja.png
-
 #begin player_gunshot_1.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
