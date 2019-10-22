@@ -662,6 +662,18 @@
 /processorParam:TextureFormat=Color
 /build:vihu_pose.png
 
+#begin vihu_pose_ampuu.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:vihu_pose_ampuu.png
+
 #begin vihu_tahtaa.png
 /importer:TextureImporter
 /processor:TextureProcessor

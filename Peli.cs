@@ -95,22 +95,47 @@ namespace SixShooter
 
             Level.Background.Image = LoadImage("tausta_title");
 
+            Image vihu1 = LoadImage("vihu_pose");
+            Image vihu2 = LoadImage("vihu_pose_ampuu");
+            Image vihu3 = LoadImage("vihu_ampui");
+            SoundEffect laukaus = LoadSoundEffect("enemy_gunshot_1");
+
             Image aloita_image = LoadImage("aloita");
             Image aloita_mouseover = LoadImage("aloita_mouseover");
             Image lopeta_image = LoadImage("lopeta");
             Image lopeta_mouseover = LoadImage("lopeta_mouseover");
 
+            GameObject vihulainen = new GameObject(vihu1);
+            vihulainen.Position = new Vector(-300, -100);
+            Add(vihulainen);
+
             GameObject title = new GameObject(LoadImage("title"));
             title.Position = new Vector(0, 150);
-            Add(title);
 
             GameObject aloita = new GameObject(aloita_image);
             aloita.Position = new Vector(0, -100);
-            Add(aloita);
 
             GameObject lopeta = new GameObject(lopeta_image);
             lopeta.Position = new Vector(0, -200);
-            Add(lopeta);
+
+            Timer.SingleShot(1, delegate
+            {
+                VihulainenAmpuu();
+                Add(title);
+            });
+            
+            Timer.SingleShot(2, delegate
+            {
+                VihulainenAmpuu();
+                Add(aloita);
+            });
+            
+            Timer.SingleShot(3, delegate
+            {
+                VihulainenAmpuu();
+                Add(lopeta);
+            });
+
 
             Mouse.ListenMovement(1.0, ValikossaLiikkuminen, null);
 
@@ -134,6 +159,16 @@ namespace SixShooter
                     lopeta.Image = lopeta_image;
                 }
 
+            }
+
+            void VihulainenAmpuu()
+            {
+                laukaus.Play();
+                vihulainen.Image = vihu2;
+                Timer.SingleShot(0.1, delegate
+                {
+                    vihulainen.Image = vihu1;
+                });
             }
 
             Mouse.ListenOn(aloita, MouseButton.Left, ButtonState.Pressed, AloitaUusiPeli, null);

@@ -51,11 +51,16 @@ namespace SixShooter
         /// <param name="kerros">Kerros, jolle peliolio on sijoitettu pelikentällä. Käytetään kuvaamaan olion etäisyyttä kamerasta. Olin koko skaalataan parametrin perusteella.</param>
         /// <param name="kuvat">Taulukko, joka sisältää peliolion käyttämän grafiikan. Välitetään yläluokan konstruktorille.</param>
         /// <param name="peli">Peli-instanssi johon objekti on lisätty.</param>
-        public Vihollinen(int id, Vector sijainti, int kerros, Image[] kuvat, SoundEffect[] aanet, Peli peli) : base(kuvat[1])
+        public Vihollinen(int id, Vector sijainti, int kerros, Image[] kuvat, SoundEffect[] aanet, Peli peli) : base(200,340)
         {
             Id = id;
 
             this.peli = peli;
+
+            vihuKuvat = kuvat;
+            laukausAanet = aanet;
+
+            this.Image = vihuKuvat[1];
 
             if (kerros == 1)
             {
@@ -79,8 +84,6 @@ namespace SixShooter
 
             this.suoja = LuoEste();
 
-            vihuKuvat = kuvat;
-            laukausAanet = aanet;
 
             OnkoHengissa = true;
             OnkoPiilossa = true;
