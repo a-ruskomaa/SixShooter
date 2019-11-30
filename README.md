@@ -3,7 +3,6 @@
 # Six Shooter
 
  Jyväskylän yliopiston Ohjelmointi 1 -kurssin harjoitustyönä toteutettu peli
-
  
  Six Shooter on yksinkertainen arcade-henkinen western-teemainen ammuskelupeli. Pelin ideana on hiirellä tähdäten ampua esteiden takaa nousevia vihollisia ja pysyä hengissä mahdollisimman pitkään. Aseena on kuudesti laukeava revolveri. Vasen hiiren näppäin ampuu, oikea näppäin lataa aseen.
  
@@ -14,5 +13,5 @@
 ![ruutukaappaus](Content/screenshot.png)
 
 Osa pelin sisällöstä on luotu muokkaamalla muiden tuottamaa avoimella lisenssillä julkaistua materiaalia. Tarkemmat tiedot tekijänoikeuksien haltijoista sekä käytetyistä lisensseistä löydät [täältä](Copyright_notices.md).
-
- Aiempi versionhallinta toteutettu Subversionilla. Repositorio: https://svn.cc.jyu.fi/srv/svn/ohj1-pelit/2019s/roarusko/trunk
+ 
+ Peli vaatii toimiakseen .Net Framework 4.5 tai uudemman.
