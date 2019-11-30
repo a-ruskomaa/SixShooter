@@ -133,7 +133,7 @@ namespace SixShooter
             //Päivitetään näytön lukemaa pelin pistetilanteen muuttuessa
             pisteNaytto.BindTo(peli.Pisteet);
 
-            //Muutetaan vielä sijaintia siten, että vasen reuna pysyy 50px vasemmasta reunasta vaikka pistelukema kasvaa
+            //Muutetaan vielä automaattisesti sijaintia siten, että vasen reuna pysyy 50px vasemmasta reunasta vaikka pistelukema kasvaa
             peli.Pisteet.Changed += delegate { pisteNaytto.X = Game.Screen.Left + 50 + pisteNaytto.Width / 2; };
 
             peli.Add(pisteNaytto);

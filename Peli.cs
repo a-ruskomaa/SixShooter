@@ -24,12 +24,15 @@ namespace SixShooter
         //Propertyt joita kysellään muistakin luokista
         public Kayttoliittyma Kayttoliittyma { get; private set; }
         public Ase Ase { get; private set; }
+
         public IntMeter Pisteet { get; private set; }
         public int EnnatysPisteet { get; private set; }
         public int EnnatysTaso { get; private set; }
+
         public IntMeter Hitpoints { get; private set; }
         public IntMeter Taso { get; private set; }
         public double TasoKerroin { get; private set; }
+
         public bool OnkoKelloKaynnissa { get { return peliAjastin.Enabled; } }
 
         private Timer peliAjastin;
@@ -309,6 +312,7 @@ namespace SixShooter
         private void LisaaAse()
         {
             this.Ase = new Ase(this);
+
             //Piirretään ase kolmannelle layerille, jotta se peittää alleen muun grafiikan
             Add(Ase, 3);
         }
@@ -341,6 +345,7 @@ namespace SixShooter
             viholliset = new List<Vihollinen>();
 
             //Loopataan sijainnit sisältävän taulukon läpi ja lisätään viholliset sekä esteet vastaaviin kohtiin
+            //Tällä hetkellä kerros määräytyy taulukon indeksin mukaan, jatkossa esim. if (sijainit[i].Y < -200) jne
             for (int i = 0; i < sijainnit.Length; i++)
             {
                 int kerros = 1;
@@ -357,7 +362,7 @@ namespace SixShooter
 
                 Vihollinen vihu = new Vihollinen(id: i, sijainti: sijainnit[i], kerros, vihuKuvat, vihuAanet, peli: this);
 
-                //Lisätään tapahtumankäsittelijä kuuntelemaan vihollisen Ampui()-tapahtumaa
+                //Lisätään tapahtumankäsittelijät reagoimaan vihollisen VihollinenOsui() sekä PelaajaOsui()-tapahtumiin
                 vihu.VihollinenOsui += KasitteleOsumaPelaajaan;
 
                 vihu.PelaajaOsui += KasitteleOsumaViholliseen;
@@ -366,7 +371,7 @@ namespace SixShooter
                 viholliset.Add(vihu);
             }
 
-            //Arvotaan kaikista vihollisista kuusi ensimmäistä tasoa varten
+            //Arvotaan ensimmäiseen tasoon osallistuvat kuusi vihollista
             vihollisetHengissa = ArvoTasonViholliset(6, viholliset);
 
             //Pelin kehitysvaiheen attribuutteja
@@ -447,7 +452,9 @@ namespace SixShooter
             Vihollinen ampuja = RandomGen.SelectOne<Vihollinen>(vihollisetHengissa);
             Console.WriteLine(ampuja.Id + " valittu");
 
-            //Tarkistetaan onko valittu vihollinen valmiina ampumaan. Tällä hetkellä jättää yhden hyökkäysvuoron väliin. Muokataan kutsua mahdollisesti myöhemmässä versiossa.
+            //Tarkistetaan onko valittu vihollinen valmiina ampumaan. Tällä hetkellä jättää hyökkäysvuoron väliin jos ei ole.
+            //Rekursiivinen metodikutsu kaatoi pelin korkeammilla tasoilla kun jäljellä oli enää yksi vihollinen.
+            //Muokataan kutsua mahdollisesti myöhemmässä versiossa.
             if (!ampuja.OnkoPiilossa)
             {
                 Console.WriteLine(ampuja.Id + " ei piilossa, arvotaan seuraava");
@@ -459,7 +466,8 @@ namespace SixShooter
 
 
         /// <summary>
-        /// Käynnistää pelistä seuraavan tason. Uudet viholliset palautetaan henkiin ja alkupisteisiinsä. Metodi nostaa myös tasokerrointa, joka nopeuttaa vihollisten hyökkäysfrekvenssiä sekä hyökkäyksen kestoa.
+        /// Käynnistää pelistä seuraavan tason. Uudet viholliset palautetaan henkiin ja alkupisteisiinsä.
+        /// Metodi nostaa myös tasokerrointa, eli nopeuttaa vihollisten hyökkäysten tiheyttä sekä hyökkäyksen kestoa.
         /// </summary>
         private void SeuraavaTaso()
         {
@@ -507,7 +515,7 @@ namespace SixShooter
         private void KasitteleOsumaViholliseen(Vihollinen vihu, Vihollinen.Hitbox hitbox)
         {
             Console.WriteLine("Käsitellään osuma viholliseen: " + vihu.Id);
-            int saadutPisteet = 0;
+            int saadutPisteet;
 
             if (hitbox == Vihollinen.Hitbox.Paa)
             {
@@ -650,6 +658,7 @@ namespace SixShooter
                 return;
             }
         }
+
         private void DebugNaytaHitboksit()
         {
             if (!debugmoodi)
@@ -677,6 +686,7 @@ namespace SixShooter
                 return;
             }
         }
+
         private void DebugSeuraavaTaso()
         {
             if (!debugmoodi)

@@ -44,7 +44,7 @@ namespace SixShooter
 
 
         /// <summary>
-        /// Luo uuden vihollisolion. Kutsuu yläluokan konstruktoria parametrinaan kutsussa saatu kuva. Tämä luo oikean kokoisen ja muotoisen peliolion, johon muut saadut parametrit liitetään.
+        /// Luo uuden vihollisolion. Kutsuu yläluokan konstruktoria parametreinaan haluttu leveys ja korkeus.
         /// </summary>
         /// <param name="id">Peliolion tunnistenumero. Vastaa peliluokan taulukoiden indeksiä, jossa viite olioon sekä sen edessä olevaan esteeseen sijaitsevat.</param>
         /// <param name="sijainti">Vektori(x,y), johon peliolion keskipiste luodaan.</param>
@@ -78,7 +78,7 @@ namespace SixShooter
             //Vihollisen saamat koordinaatit ovat esteen yläreunan tasalla, siirretään alaspäin puolen pituuden verran
             X = sijainti.X;
             Y = sijainti.Y - Height / 2;
-            //Y = sijainti.Y;
+
             //Tallennetaan sijainti myöhempää käyttöä varten
             this.alkupiste = this.Position;
 
@@ -128,7 +128,7 @@ namespace SixShooter
         {
             Console.WriteLine(this.Id + " hyokkää");
 
-            //Muutetaan julkista propertya, jotta samaa vihollista ei voida valita uudelleen ennen hyökkäyksen loppumista
+            //Varmistetaan, että pelin metodilla ArvoSeuraavaAmpuja() ei voida valita samaa vihollista uudelleen ennen hyökkäyksen loppumista
             OnkoPiilossa = false;
 
             Image = vihuKuvat[1];
@@ -173,8 +173,8 @@ namespace SixShooter
             //Ammutaan kohti pelaajaa
             Image = vihuKuvat[3];
 
-            //Arvotaan osuuko vihollinen. Osumatarkkuus paranee tähtäämiseen käytetyn ajan myötä.
-            //Parametrina saatu tahtaysAika kertoo ainoastaan tähtäyksen keston arvotun osuuden. Pelin vaikeutuminen ei vaikuta vihollisten osumatarkkuuteen.
+            //Arvotaan osuuko vihollinen. Osumatarkkuus heikkenee jos tähtäykseen käytetty aika oli lyhyt.
+            //Parametrina saatu tahtaysAika kertoo ainoastaan tähtäyksen keston randomoidun osuuden. Pelin vaikeutuminen ei vaikuta vihollisten osumatarkkuuteen.
             double osumatarkkuus = 1.0;
 
             if (tahtaysAika < 2.5 && tahtaysAika >= 2.0)
