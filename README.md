@@ -8,10 +8,10 @@
  
  Vain päähän tai vartaloon osuneet laukaukset rekisteröidään. Pääosumasta ansaitsee enemmän pisteitä. Voit ansaita myös sattumanvaraisen bonuksen, kuten lisää osumapisteitä tai rajattomat ammukset. Myös bonuksen todennäköisyys on suurempi pääosumassa. 
  
- Eliminoituasi kaikki tason viholliset, alkaa uusi taso jossa viholliset ovat hieman aiempaa nopeampia.
+ Eliminoituasi kaikki tason viholliset alkaa uusi taso jossa viholliset ovat hieman aiempaa nopeampia.
 
 ![ruutukaappaus](Content/screenshot.png)
 
 Osa pelin sisällöstä on luotu muokkaamalla muiden tuottamaa avoimella lisenssillä julkaistua materiaalia. Tarkemmat tiedot tekijänoikeuksien haltijoista sekä käytetyistä lisensseistä löydät [täältä](Copyright_notices.md).
  
- Pelin kääntäminen vaatii minimissään .Net Framework 4.5, MonoGame 3.7.1 sekä Jypeli & Jypeli.Physics2d kirjastojen version 4.0.
+ Pelin kääntäminen vaatii minimissään .Net Framework 4.6, MonoGame 3.7.1 sekä Jypeli & Jypeli.Physics2d kirjastojen version 4.0.
