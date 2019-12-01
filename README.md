@@ -14,4 +14,4 @@
 
 Osa pelin sisällöstä on luotu muokkaamalla muiden tuottamaa avoimella lisenssillä julkaistua materiaalia. Tarkemmat tiedot tekijänoikeuksien haltijoista sekä käytetyistä lisensseistä löydät [täältä](Copyright_notices.md).
  
- Peli vaatii toimiakseen .Net Framework 4.5 tai uudemman.
+ Pelin kääntäminen vaatii minimissään .Net Framework 4.5, MonoGame 3.7.1 sekä Jypeli & Jypeli.Physics2d kirjastojen version 4.0.
